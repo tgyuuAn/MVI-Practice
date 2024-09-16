@@ -32,13 +32,12 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MVIPracticeTheme {
-                val number by viewModel.number.collectAsStateWithLifecycle()
+                val mainState by viewModel.mainState.collectAsStateWithLifecycle()
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     CalculationScreen(
-                        value = number,
-                        plus = viewModel::plus,
-                        minus = viewModel::minus,
+                        mainState = mainState,
+                        event = viewModel::event,
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -49,35 +48,41 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun CalculationScreen(
-    value: Int,
-    plus: () -> Unit,
-    minus: () -> Unit,
-    modifier: Modifier = Modifier
+    mainState: MainState,
+    event: (MainEvent) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxSize()
     ) {
-        Text(
-            text = "$value",
-            modifier = modifier
-        )
+        if (mainState.isLoading) {
+            Text(
+                text = "로딩중..",
+                modifier = modifier
+            )
+        } else {
+            Text(
+                text = "${mainState.number}",
+                modifier = modifier
+            )
 
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(
-                onClick = plus,
-                modifier = Modifier.height(40.dp)
-                    .weight(1f)
-            ) {
-                Text(text = "+")
-            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                    onClick = { event(MainEvent.Plus) },
+                    modifier = Modifier.height(40.dp)
+                        .weight(1f)
+                ) {
+                    Text(text = "+")
+                }
 
-            Button(
-                onClick = minus,
-                modifier = Modifier.height(40.dp)
-                    .weight(1f)
-            ) {
-                Text(text = "-")
+                Button(
+                    onClick = { event(MainEvent.Minus) },
+                    modifier = Modifier.height(40.dp)
+                        .weight(1f)
+                ) {
+                    Text(text = "-")
+                }
             }
         }
     }

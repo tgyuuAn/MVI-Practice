@@ -1,6 +1,5 @@
-package com.tgyuu.mvipractice.ui.theme
+package com.tgyuu.presentation.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

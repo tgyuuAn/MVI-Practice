@@ -1,4 +1,4 @@
-package com.tgyuu.mvipractice.ui.theme
+package com.tgyuu.presentation.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

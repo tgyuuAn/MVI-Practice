@@ -1,4 +1,4 @@
-package com.tgyuu.mvipractice
+package com.tgyuu.presentation
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -11,7 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.tgyuu.mvipractice.ui.theme.MVIPracticeTheme
+import com.tgyuu.presentation.ui.theme.MVIPracticeTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

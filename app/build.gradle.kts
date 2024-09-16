@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.tgyuu.mvi_practice"
+    namespace = "com.tgyuu.mvipractice"
     compileSdk = 34
 
     defaultConfig {

@@ -1,7 +1,9 @@
 package com.tgyuu.presentation
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.tgyuu.domain.ArticleRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.SharingStarted
@@ -12,21 +14,47 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel @Inject constructor() : ViewModel() {
-    private val events = Channel<MainEvent>()
+class MainViewModel @Inject constructor(
+    private val getArticlesUseCase: ArticleRepository,
+) : ViewModel() {
+    private val intents = Channel<MainIntent>()
+    private val sideEffects = Channel<MainSideEffect>()
 
-    val mainState = events.receiveAsFlow()
+    val mainState = intents.receiveAsFlow()
         .runningFold(MainState(), ::updateState)
         .stateIn(viewModelScope, SharingStarted.Eagerly, MainState())
 
-    internal fun event(event: MainEvent) = viewModelScope.launch {
-        events.send(event)
+    val mainSideEffect = sideEffects.receiveAsFlow()
+
+    internal fun event(event: MainIntent) = viewModelScope.launch {
+        intents.send(event)
     }
 
-    private fun updateState(current: MainState, event: MainEvent): MainState {
+    internal fun sideEffect(sideEffect: MainSideEffect) = viewModelScope.launch {
+        sideEffects.send(sideEffect)
+    }
+
+    private suspend fun updateState(current: MainState, event: MainIntent): MainState {
+        Log.d("test", "intent 호출 : $event")
+
         return when (event) {
-            MainEvent.Plus -> current.copy(number = current.number + 1)
-            MainEvent.Minus -> current.copy(number = current.number - 1)
+            MainIntent.Plus -> current.copy(number = current.number + 1)
+            MainIntent.Minus -> current.copy(number = current.number - 1)
+            MainIntent.GetArticles -> {
+                fetchArticles()
+                current.copy(isLoading = true)
+            }
+
+            is MainIntent.Loaded -> current.copy(isLoading = false, articles = event.articles)
+        }
+    }
+
+    private fun fetchArticles() = viewModelScope.launch {
+        try {
+            val articles = getArticlesUseCase.getArticles()
+            event(MainIntent.Loaded(articles))
+        } catch (e: Exception) {
+            sideEffect(MainSideEffect.ShowToast("Failed to load articles"))
         }
     }
 }
@@ -34,9 +62,16 @@ class MainViewModel @Inject constructor() : ViewModel() {
 data class MainState(
     val isLoading: Boolean = false,
     val number: Int = 0,
+    val articles: List<String> = emptyList(),
 )
 
-sealed class MainEvent {
-    data object Plus : MainEvent()
-    data object Minus : MainEvent()
+sealed interface MainIntent {
+    data class Loaded(val articles: List<String>) : MainIntent
+    data object Plus : MainIntent
+    data object Minus : MainIntent
+    data object GetArticles : MainIntent
+}
+
+sealed interface MainSideEffect {
+    data class ShowToast(val msg: String) : MainSideEffect
 }
